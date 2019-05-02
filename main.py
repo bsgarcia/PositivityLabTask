@@ -1,4 +1,5 @@
 import numpy as np
+import itertools as it
 
 from exp.exp import ExperimentGUI
 
@@ -61,22 +62,27 @@ def generate(ncontext, ntrial):
 
 
 def main():
+    ncontext = 8
     context, r, p, ntrial, idx_options, options, pause = generate(ncontext=8, ntrial=16)
 
-    context_map = {
-        0: ('a', 'b'),
-        1: ('c', 'd'),
-        2: ('e', 'f'),
-        3: ('g', 'h'),
-        4: ('i', 'j'),
-        5: ('k', 'l'),
-        6: ('m', 'n'),
-        7: ('o', 'p')
-    }
+    img_list = ['a', 'b',
+                'c', 'd',
+                'e', 'f',
+                'g', 'h',
+                'i', 'j',
+                'k', 'l',
+                'm', 'n',
+                'o', 'p']
+
+    np.random.shuffle(img_list)
+
+    context_map = {k: tuple(v) for k, v in enumerate(np.random.choice(
+        img_list, size=(len(img_list)//2, 2), replace=False
+    ))}
 
     exp = ExperimentGUI(
         ntrial=ntrial,
-        name="LossNeglect",
+        name="Positivity",
         context=context,
         reward=r,
         prob=p,

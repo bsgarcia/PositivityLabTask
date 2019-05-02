@@ -12,6 +12,7 @@ class AbstractExperiment:
     Abstract class that implements logic
 
     """
+
     def __init__(self, ntrial, context, reward,
                  prob, context_map, idx_options, options, pause,
                  *args, **kwargs):
@@ -26,6 +27,8 @@ class AbstractExperiment:
         self.options = options
         self.pause = pause
         self.context_map = context_map
+        self.post_test_stims = np.array(list(context_map.values()), dtype=object).flatten()
+        self.context_post = np.random.randint(8, size=10)
 
         #  init
         self.trial_handler = None
@@ -70,6 +73,7 @@ class AbstractGUI:
     Abstract GUI Component
 
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__()
         self.win = None
@@ -85,13 +89,13 @@ class AbstractGUI:
 
     def init_experiment_window(self):
         self.win = psy.visual.Window(
-            # size=(1300, 800),
-            fullscr=True,
+            size=(1300, 800),
+            fullscr=False,
             screen=0,
             allowGUI=False,
             allowStencil=False,
             monitor='testMonitor',
-            color='black',
+            color=(-1, -1, -1),
             colorSpace='rgb',
             blendMode='avg',
             winType='pyglet',
@@ -134,10 +138,32 @@ class AbstractGUI:
         return text
 
     @staticmethod
-    def present_stimulus(obj, pos=(0, 0), size=None):
+    def create_text_box_stimulus(win, pos, boxcolor='white', outline='grey'):
+        rect = psy.visual.Rect(
+            win=win,
+            width=.25,
+            height=.25,
+            fillColor=boxcolor,
+            lineColor=outline,
+            pos=pos,
+        )
+        return rect
+
+    @staticmethod
+    def create_rating_scale(win, pos):
+        # rating scale
+        scale = visual.RatingScale(
+            win, low=-1, high=1, size=1, precision=10, tickMarks=['-1', '1'],
+            markerStart='0', marker='circle', textSize=.5, showValue=True,
+            showAccept=True, noMouse=True, maxTime=1000, pos=pos)
+        return scale
+
+    @staticmethod
+    def present_stimulus(obj, pos=None, size=None):
         if size:
             obj.setSize(size)
-        obj.setPos(pos)
+        if pos:
+            obj.setPos(pos)
         obj.draw()
 
     @staticmethod
@@ -219,16 +245,28 @@ class ExperimentGUI(AbstractExperiment, AbstractGUI):
     GUI component
 
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         #  experiment parameters
         self.pos_left = [-0.3, 0]
         self.pos_right = [0.3, 0]
+        self.pos_up = [0, 0.3]
+        self.pos_down = [0, -0.3]
 
     def display_selection(self, left_or_right):
         pos = [self.pos_left, self.pos_right][left_or_right][:]
         pos[1] -= 0.25
         self.present_stimulus(self.img['arrow'], pos=pos, size=(0.04, 0.07))
+
+    def display_rating_scale(self, t):
+        # rating scale
+        scale = self.create_rating_scale(win=self.win, pos=self.pos_down)
+
+        while scale.noResponse:
+            scale.draw()
+            self.display_single(t)
+            self.win.flip()
 
     def display_fixation(self):
         self.present_stimulus(self.img['cross'])
@@ -242,7 +280,7 @@ class ExperimentGUI(AbstractExperiment, AbstractGUI):
     def display_pause(self):
         self.present_stimulus(self.txt['pause'])
 
-    def display_counterfactual_outcome(self, outcomes, choice,  t, color='red'):
+    def display_counterfactual_outcome(self, outcomes, choice, t, color='red'):
         pos, text = [self.pos_left, self.pos_right], [None, None]
 
         # set order
@@ -274,9 +312,23 @@ class ExperimentGUI(AbstractExperiment, AbstractGUI):
         self.present_stimulus(self.img[img_left], pos=self.pos_left, size=0.25)
         self.present_stimulus(self.img[img_right], pos=self.pos_right, size=0.25)
 
+    def display_exp_desc_pair(self, t):
+        img, text = self.context_map[self.context_post[t]]
+        text = self.create_text_stimulus(
+            self.win, text='50% tamere \n50% tonpere', color='white', height=.05)
+        textbox = self.create_text_box_stimulus(
+            self.win, boxcolor='black', outline='white', pos=self.pos_left)
+        self.present_stimulus(self.img[img], pos=self.pos_right, size=0.25)
+        self.present_stimulus(textbox)
+        self.present_stimulus(text, pos=self.pos_left)
+
+    def display_single(self, t, pos=None):
+        img = self.post_test_stims[t]
+        self.present_stimulus(self.img[img], pos=pos if pos else self.pos_up, size=0.25)
+
     def display_time(self, t):
         self.present_stimulus(self.create_text_stimulus(
-                self.win, text=str(t), color='white', height=0.12), pos=(0.7, 0.8)
+            self.win, text=str(t), color='white', height=0.12), pos=(0.7, 0.8)
         )
 
     def display_continue(self):
@@ -329,11 +381,11 @@ class ExperimentGUI(AbstractExperiment, AbstractGUI):
             ]
 
             # Test if choice has a superior expected utility
-            superior = sum(self.reward[t][c] * self.prob[t][c]) >\
-                sum(self.reward[t][int(not c)] * self.prob[t][int(not c)])
+            superior = sum(self.reward[t][c] * self.prob[t][c]) > \
+                       sum(self.reward[t][int(not c)] * self.prob[t][int(not c)])
             # Test for equal utilities
-            equal = sum(self.reward[t][c] * self.prob[t][c]) ==\
-                sum(self.reward[t][int(not c)] * self.prob[t][int(not c)])
+            equal = sum(self.reward[t][c] * self.prob[t][c]) == \
+                    sum(self.reward[t][int(not c)] * self.prob[t][int(not c)])
 
             # Fill trial object
             trial['reaction_time'] = timer.getTime()
@@ -377,6 +429,53 @@ class ExperimentGUI(AbstractExperiment, AbstractGUI):
 
             self.write_csv(trial)
 
+    def run_post_test(self, trial_obj):
+
+        self.win.flip()
+
+        for t in range(10):
+
+            # Fixation
+            self.display_time(t)
+            self.display_fixation()
+            self.win.flip()
+            psy.core.wait(0.5)
+            self.display_time(t)
+            self.display_fixation()
+            self.display_exp_desc_pair(t)
+            self.win.flip()
+            res = self.wait_for_response()
+            pressed_right = res == 'right'
+
+            c = self.options[
+                self.idx_options[t][int(pressed_right)]
+            ]
+
+            # Test if choice has a superior expected utility
+            superior = sum(self.reward[t][c] * self.prob[t][c]) > \
+                       sum(self.reward[t][int(not c)] * self.prob[t][int(not c)])
+            # Test for equal utilities
+            equal = sum(self.reward[t][c] * self.prob[t][c]) == \
+                    sum(self.reward[t][int(not c)] * self.prob[t][int(not c)])
+
+            self.display_time(t)
+            self.display_fixation()
+            self.display_exp_desc_pair(t)
+            self.display_selection(left_or_right=pressed_right)
+            self.win.flip()
+            psy.core.wait(0.6)
+
+            self.display_outcome(
+                outcome=1,
+                left_or_right=pressed_right
+            )
+
+            self.display_time(t)
+            self.display_fixation()
+            self.display_selection(left_or_right=pressed_right)
+            self.win.flip()
+            psy.core.wait(3)
+
     def run(self):
         super().run()
         # Display greetings
@@ -386,6 +485,7 @@ class ExperimentGUI(AbstractExperiment, AbstractGUI):
         psy.event.waitKeys()
         psy.event.clearEvents()
 
+        self.run_post_test([])
         self.run_trials(self.generate_trials())
 
         self.display_end()

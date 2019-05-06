@@ -4,66 +4,80 @@ import itertools as it
 from exp.exp import ExperimentGUI
 
 
-def generate(ncontext, ntrial):
+def generate_bloc(ncontext, ntrial_per_context,
+                  context_cond_mapping, reward, prob, interleaved=True):
     """
-    defines prob, rewards, contexts, trials etc...
+
     :param ncontext:
-    :param ntrial:
+    :param ntrial_per_context:
+    :param context_cond_mapping:
+    :param reward:
+    :param prob:
+    :param interleaved:
     :return:
     """
     # ------------------------------------------------------------------------------- # 
-    context = np.repeat([range(ncontext//2)], ntrial//(ncontext//2), axis=0)
-    # context = np.repeat(range(ncontext), ntrial)
-    # shuffle
-    for t in range(len(context)):
-        np.random.shuffle(context[t])
-    # replace by new contexts
-    context = context.flatten()
-    for i, j in zip(range(4), range(4, 8)):
-        context[(np.arange(len(context)) >= ntrial/2) * (context == i)] = j
+
+    if interleaved:
+        context = np.repeat([range(ncontext)], ntrial_per_context, axis=0)
+        # shuffle
+        for el in context:
+            np.random.shuffle(el)
+        # flatten the array
+        context = context.flatten()
+    else:
+        context = np.repeat(range(ncontext), ntrial_per_context)
 
     # prepare arrays
     reward = np.zeros(ncontext, dtype=object)
     prob = np.zeros(ncontext, dtype=object)
-    r = np.zeros(ntrial, dtype=object)
-    p = np.zeros(ntrial, dtype=object)
+    r = np.zeros(ntrial_per_context, dtype=object)
+    p = np.zeros(ntrial_per_context, dtype=object)
     options = [0, 1]
-    idx_options = np.repeat([[0, 1]], ntrial, axis=0)
+    idx_options = np.repeat([[0, 1]], ntrial_per_context, axis=0)
+    cond = [context_cond_mapping[i] for i in context]
 
-    # Define probs and rewards for each pair
-    # ------------------------------------------------------------------------------- # 
-    # AB and IJ
-    for i in [0, 0 + 4]:
-        reward[i] = [[0, 0], [-0.5, 0.5]]
-        prob[i] = [[0.5, 0.5], [0.5, 0.5]]
-
-    # CD and KL
-    for i in [1, 1 + 4]:
-        reward[i] = [[0, 0], [-0.5, 0.5]]
-        prob[i] = [[0.5, 0.5], [0.5, 0.5]]
-
-    #  EF and MN
-    for i in [2, 2 + 4]:
-        reward[i] = [[-0.5, 0.5], [-0.5, 0.5]]
-        prob[i] = [[0.25, 0.75], [0.75, 0.25]]
-
-    #  GH and OP
-    for i in [3, 3 + 4]:
-        reward[i] = [[0, 0.5], [0, -0.5]]
-        prob[i] = [[0.5, 0.5], [0.5, 0.5]]
-    # ------------------------------------------------------------------------------- # 
-
-    for t in range(ntrial):
+    for t in range(ntrial_per_context):
         r[t] = np.array(reward[context[t]])
         p[t] = np.array(prob[context[t]])
         np.random.shuffle(idx_options[t])
 
-    return context, r, p, ntrial, idx_options, options, ntrial//2
+    return context, cond, r, p, idx_options, options
 
 
 def main():
+
+    # Define probs and rewards for each cond
+    # ------------------------------------------------------------------------------- # 
+    reward = [[] for _ in range(4)]
+    prob = [[] for _ in range(4)]
+
+    reward[0] = [[-1, 1], [-1, 1]]
+    prob[0] = [[0.2, 0.8], [0.8, 0.2]]
+
+    reward[1] = [[-1, 1], [-1, 1]]
+    prob[1] = [[0.3, 0.7], [0.7, 0.3]]
+
+    reward[2] = [[-1, 1], [-1, 1]]
+    prob[2] = [[0.4, 0.6], [0.6, 0.4]]
+
+    reward[3] = [[-1, 1], [-1, 1]]
+    prob[3] = [[0.5, 0.5], [0.5, 0.5]]
+    # ------------------------------------------------------------------------------- # 
+
+    ncond = 4
     ncontext = 8
-    context, r, p, ntrial, idx_options, options, pause = generate(ncontext=8, ntrial=16)
+    context_cond_mapping = np.repeat(
+        [range(4)], ncontext/ncond, axis=0).flatten()
+    ntrial_per_context = 48
+
+    context, cond, r, p, idx_options, options = generate_bloc(
+        ncontext=ncontext,
+        ntrial_per_context=ntrial_per_context,
+        context_cond_mapping=context_cond_mapping,
+        reward=reward,
+        prob=prob
+    )
 
     img_list = ['a', 'b',
                 'c', 'd',
@@ -80,16 +94,10 @@ def main():
         img_list, size=(len(img_list)//2, 2), replace=False
     ))}
 
-    exp = ExperimentGUI(
-        ntrial=ntrial,
-        name="Positivity",
-        context=context,
-        reward=r,
-        prob=p,
+    exp = ExperimentGUI(name="RetrieveAndCompare")
+    exp.init_phase(
         context_map=context_map,
-        idx_options=idx_options,
-        options=options,
-        pause=pause
+
     )
     exp.run()
 

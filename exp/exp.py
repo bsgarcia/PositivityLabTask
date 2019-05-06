@@ -32,7 +32,6 @@ class AbstractExperiment:
 
         #  init
         self.trial_handler = None
-        self.counterfactual = None
         self.exp_info = None
         self.info_dlg = None
         self.datafile = None
@@ -80,7 +79,6 @@ class AbstractGUI:
         self.exp_info = None
         self.info_dlg = None
         self.name = None
-        self.counterfactual = None
         self.datafile = None
         self.img = None
         self.txt = None
@@ -103,23 +101,31 @@ class AbstractGUI:
         )
 
     def init_experiment_info(self):
+
         self.exp_info = {
-            'subject_id': 'test',
+            'subject_id': '',
             'session:': '',
-            'condition': ['factual'],
+            'elicitation': ['0', '1', '2'],
             'age': '',
             'gender': ['male', 'female'],
             'date': psy.data.getDateStr(format="%Y-%m-%d_%H:%M")
         }
+
+        self.datafile = f'data{os.path.sep}\
+            {self.exp_info["elicitation"]}.csv'
+
+        try:
+            f = open(f'data/{self.datafile}')
+            arr = np.genfromtxt(f'data/{self.datafile}', delimiter=',', skip_header=True)
+            self.exp_info['subject_id'] = max(arr[:, 0])
+        except FileNotFoundError:
+            self.exp_info['subject_id'] = 0
+
         self.info_dlg = psy.gui.DlgFromDict(
             dictionary=self.exp_info,
             title=self.name,
             fixed=['ExpVersion'],
         )
-
-        self.counterfactual = 'counterfactual' in self.exp_info['condition']
-        self.datafile = f'data{os.path.sep}\
-            {self.exp_info["subject_id"]}_{self.exp_info["condition"]}.csv'
 
         if self.info_dlg.OK:
             return self.exp_info
@@ -404,22 +410,10 @@ class ExperimentGUI(AbstractExperiment, AbstractGUI):
             self.win.flip()
             psy.core.wait(0.6)
 
-            # Display either one, either the two outcomes
-            if self.counterfactual:
-                outcomes = {
-                    c: trial['outcome'],
-                    not c: trial['cf_outcome']
-                }
-                self.display_counterfactual_outcome(
-                    outcomes=outcomes,
-                    t=t,
-                    choice=c
-                )
-            else:
-                self.display_outcome(
-                    outcome=trial['outcome'],
-                    left_or_right=pressed_right
-                )
+            self.display_outcome(
+                outcome=trial['outcome'],
+                left_or_right=pressed_right
+            )
 
             self.display_time(t)
             self.display_fixation()

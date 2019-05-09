@@ -2,19 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3ed62906-e73f-44a0-b85e-d7823086632f" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/resources/A.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/resources/B.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/resources/C.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/resources/D.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/resources/E.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/resources/F.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/resources/G.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/resources/H.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/user.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/user.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/I.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/J.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/K.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/L.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/M.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/N.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/O.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/P.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exp/exp.py" beforeDir="false" afterPath="$PROJECT_DIR$/exp/exp.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/welcome.txt" beforeDir="false" afterPath="$PROJECT_DIR$/resources/welcome.txt" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -211,7 +207,7 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds" extendedState="7">
     <option name="y" value="27" />
     <option name="width" value="960" />
     <option name="height" value="1173" />
@@ -288,7 +284,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="27" width="1920" height="1173" extended-state="7" />
-    <editor active="true" />
     <layout>
       <window_info id="Favorites" order="0" side_tool="true" />
       <window_info content_ui="combo" id="Project" order="1" weight="0.18489583" />

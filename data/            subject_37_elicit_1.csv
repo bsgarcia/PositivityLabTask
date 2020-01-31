@@ -1,0 +1,4 @@
+t,subject_id,elicitation,age,gender,date,reaction_time,choice,choice_maximizing_utility,probabilities,rewards,outcome,cf_outcome,key_pressed,cond,session
+0,37,1,,male,2020-01-30_16:16,1.3057201729388908,1,1,"[[0.3 0.7]
+ [0.7 0.3]]","[[-1  1]
+ [-1  1]]",-1,-1,left,1,1

@@ -98,13 +98,13 @@ class AbstractGUI(AbstractExperiment):
 
     def init_experiment_window(self):
         self.win = psy.visual.Window(
-            size=(1300, 800),
-            fullscr=False,
+            size=(620, 620),
+            fullscr=True,
             screen=0,
             allowGUI=False,
             allowStencil=False,
             monitor='testMonitor',
-            color=(-1, -1, -1),
+            color='black',
             colorSpace='rgb',
             blendMode='avg',
             winType='pyglet',
@@ -117,7 +117,7 @@ class AbstractGUI(AbstractExperiment):
 
         self.exp_info = {
             'subject_id': subject_id,
-            'elicitation': [0, 1, 2],
+            'elicitation': [1, 2],
             'age': '',
             'gender': ['male', 'female'],
             'date': psy.data.getDateStr(format="%Y-%m-%d_%H:%M")
@@ -146,7 +146,7 @@ class AbstractGUI(AbstractExperiment):
         psy.core.quit()
 
     @staticmethod
-    def create_text_stimulus(win, text, height, color):
+    def create_text_stimulus(win, text, height, color, wrapwidth=None):
 
         text = psy.visual.TextStim(
             win=win,
@@ -157,18 +157,20 @@ class AbstractGUI(AbstractExperiment):
             color=color,
             colorSpace='rgb',
             alignHoriz='center',
-            alignVert='center'
+            alignVert='center',
+            wrapWidth=wrapwidth
         )
         return text
 
     @staticmethod
-    def create_text_box_stimulus(win, pos, boxcolor='white', outline='grey'):
+    def create_text_box_stimulus(win, pos, boxcolor='white', outline='grey', linewidth=1):
         rect = psy.visual.Rect(
             win=win,
             width=.25,
             height=.25,
             fillColor=boxcolor,
             lineColor=outline,
+            lineWidth=linewidth,
             pos=pos,
         )
         return rect
@@ -231,7 +233,7 @@ class AbstractGUI(AbstractExperiment):
 
             if ext in ('bmp', 'jpg', 'png'):
                 stim[name] = psy.visual.ImageStim(
-                    win, image=f'{path}{filename}', color='white'
+                    win, image=f'{path}{filename}',# size=(.7, .8)#color='white'
                 )
 
             elif ext == 'txt':
@@ -267,8 +269,16 @@ class AbstractGUI(AbstractExperiment):
         self.init_experiment_window()
 
         # Load files
-        names = self.get_files()
-        self.stim = self.load_files(win=self.win, files=names)
+        path = 'resources/symbols/'
+        names = self.get_files(path=path)
+        self.stim = self.load_files(win=self.win, files=names, path=path)
+
+        path = 'resources/lotteries/'
+        names = self.get_files(path=path)
+
+        self.stim.update(
+            self.load_files(win=self.win, files=names, path=path)
+        )
 
 
 class ExperimentGUI(AbstractGUI):
@@ -341,9 +351,9 @@ class ExperimentGUI(AbstractGUI):
         cf_out = outcomes[not choice]
         out = outcomes[choice]
         text[choice] = \
-            f'+{out} €' if out > 0 else f'{out} €'
+            f'+{out}' if out > 0 else f'{out}'
         text[not choice] = \
-            f'+{cf_out} €' if cf_out > 0 else f'{cf_out} €'
+            f'+{cf_out}' if cf_out > 0 else f'{cf_out}'
         text = np.array(text, dtype=str)[self.idx_options[t]]
 
         # Display
@@ -354,7 +364,7 @@ class ExperimentGUI(AbstractGUI):
 
     def display_outcome(self, outcome, left_or_right, color='red'):
         pos = [self.pos_left, self.pos_right][left_or_right][:]
-        text = f'+{outcome} €' if outcome > 0 else f'{outcome} €'
+        text = f'+{outcome}' if outcome > 0 else f'{outcome}'
         self.present_stimulus(
             self.create_text_stimulus(win=self.win, text=text, color=color, height=0.13),
             pos=pos
@@ -377,20 +387,10 @@ class ExperimentGUI(AbstractGUI):
         rwin = r[1]
         rlose = r[0]
 
-        if elicitation:
-            txt = ('%.1f pts' % sum([pwin*rwin, plose*rlose]))
-        else:
-            txt = f'{int(pwin*100)}% chance of winning {rwin}\n\n' \
-                f'{int(plose*100)}% chance of losing {rlose}'
+        txt = ('%.1f_0' % sum([pwin*rwin, plose*rlose]))
 
-        text = self.create_text_stimulus(
-            self.win, text=txt, color='white', height=.037)
-        textbox = self.create_text_box_stimulus(
-            self.win, boxcolor='black', outline='white', pos=self.pos_left)
-
-        self.present_stimulus(self.stim[img], pos=self.pos_right, size=0.25)
-        self.present_stimulus(textbox, size=1.1)
-        self.present_stimulus(text, pos=self.pos_left)
+        self.present_stimulus(self.stim[txt], pos=self.pos_left, )#size=tuple(self.stim[txt].size*0.6/max(self.stim[txt].size)))
+        self.present_stimulus(self.stim[img], pos=self.pos_right, )#size=0.3)
 
     def display_single(self, t, pos=None):
         img = self.img_list[self.elicitation_stim[t]]
@@ -503,7 +503,7 @@ class ExperimentGUI(AbstractGUI):
             self.display_time(t)
             self.display_fixation()
 
-            if self.exp_info['elicitation'] in (0, 1):
+            if self.exp_info['elicitation'] == 1:
                 self.display_exp_desc_pair(
                     t,
                     elicitation=self.exp_info['elicitation']

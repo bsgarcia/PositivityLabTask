@@ -61,9 +61,14 @@ def main():
     reward[2] = [[-1, 1], [-1, 1]]
     prob[2] = [[0.4, 0.6], [0.6, 0.4]]
 
+    # reward[3] = [[-1, 1], [-1, 1]]
+    # prob[3] = [[0.5, 0.5], [0.5, 0.5]]
+
     reward[3] = [[-1, 1], [-1, 1]]
-    prob[3] = [[0.5, 0.5], [0.5, 0.5]]
-    # ------------------------------------------------------------------------------- # 
+    prob[3] = [[0.1, 0.9], [0.9, 0.1]]
+
+    # reward[5] = [[-1, 1], [-1, 1]]
+    # prob[5] = [[1, 0], [0, 1]]
 
     ncond = 4
     ncontext = 4
@@ -91,7 +96,7 @@ def main():
                 'm', 'n',
                 'o', 'p']
 
-    img_list = [i.upper() for i in img_list]
+    #img_list = [i.upper() for i in img_list]
 
     np.random.shuffle(img_list)
 
@@ -103,26 +108,85 @@ def main():
     # ------------------------------------------------------------------------------- # 
     exp = ExperimentGUI(name="RetrieveAndCompare", img_list=img_list)
     exp.init()
+    # # import string
+    # # from psychopy import core
+    # # for txt in string.ascii_uppercase:
+    # #     text = exp.create_text_stimulus(
+    # #         exp.win, text=txt, color='black', height=1.2)
+    # #     textbox = exp.create_text_box_stimulus(
+    # #         exp.win, boxcolor='white', outline='black', pos=(0, 0), linewidth=6)
+    # #
+    # #     # self.present_stimulus(self.stim[img], pos=self.pos_right, size=0.25)
+    # #     exp.present_stimulus(textbox, size=7.9)
+    # #     exp.present_stimulus(text, pos=(0, 0))
+    # #
+    # #     exp.win.flip()
+    # #     exp.win.getMovieFrame()  # Defaults to front buffer, I.e. what's on screen now.
+    # #     # exp.win.saveMovieFrames(f'{txt}.jpg')
+    # #     core.wait(1)
+    #
+    # from psychopy import core
+    # for txt in [('%.1f pts') % (float(i)) for i in (-1, -0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8, 1)]:
+    #     text = exp.create_text_stimulus(
+    #         exp.win, text=txt, color='black', height=0.53, wrapwidth=3)
+    #     textbox = exp.create_text_box_stimulus(
+    #         exp.win, boxcolor='white', outline='black', pos=(0, 0), linewidth=6)
+    #
+    #     # self.present_stimulus(self.stim[img], pos=self.pos_right, size=0.25)
+    #     exp.present_stimulus(textbox, size=7.9)
+    #     exp.present_stimulus(text, pos=(0, 0))
+    #     #
+    #     exp.win.flip()
+    #     exp.win.getMovieFrame()  # Defaults to front buffer, I.e. what's on screen now.
+    #     exp.win.saveMovieFrames(f'{txt.replace(" ", "_")}.jpg')
+    #     core.wait(1)
+    # #
+    # from psychopy import core
+    # for r, p in zip(reward, prob):
+    #     for i, j in zip(r, p):
+    #         pwin = j[1]
+    #         rwin = i[1]
+    #         plose = j[0]
+    #         rlose = i[0]
+    #         txt = f'{int(pwin*100)}% chance of winning {rwin}\n\n' \
+    #             f'{int(plose*100)}% chance of losing {rlose}'
+    #
+    #         text = exp.create_text_stimulus(
+    #             exp.win, text=txt, color='black', height=0.15, wrapwidth=3)
+    #         textbox = exp.create_text_box_stimulus(
+    #             exp.win, boxcolor='white', outline='black', pos=(0, 0), linewidth=6)
+    #
+    #     # self.present_stimulus(self.stim[img], pos=self.pos_right, size=0.25)
+    #         exp.present_stimulus(textbox, size=7.9)
+    #         exp.present_stimulus(text, pos=(0, 0))
+    #
+    #         exp.win.flip()
+    #         exp.win.getMovieFrame()  # Defaults to front buffer, I.e. what's on screen now.
+    #         exp.win.saveMovieFrames(f'{pwin}_{plose}.jpg')
+    #         core.wait(1)
+    #
+    #
+    #
 
     # TRAINING
     # ------------------------------------------------------------------------------- # 
 
-    # Experiment phase
-    exp.init_phase(
-        ntrial=ntrial,
-        context=context,
-        cond=cond,
-        context_map=context_map,
-        reward=r,
-        prob=p,
-        idx_options=idx_options,
-        options=options,
-        session=0,
-        elicitation_stim=None,
-        elicitation_option=None
-    )
-
-    exp.run(welcome=True)
+    # # Experiment phase
+    # exp.init_phase(
+    #     ntrial=ntrial,
+    #     context=context,
+    #     cond=cond,
+    #     context_map=context_map,
+    #     reward=r,
+    #     prob=p,
+    #     idx_options=idx_options,
+    #     options=options,
+    #     session=0,
+    #     elicitation_stim=None,
+    #     elicitation_option=None
+    # )
+    #
+    # exp.run(welcome=True)
 
     # Elicitation phase
     exp.init_phase(
